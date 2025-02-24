@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Button, Typography } from 'antd';
+import { FiPlus } from 'react-icons/fi';
 import GraphComponent from './components/Graph';
 import BubbleModal from './components/BubbleModal';
 import { v4 as uuidv4 } from 'uuid';
 import { useBubbleStore, Bubble } from './store/BubbleStore';
+
+const { Title } = Typography;
 
 const App: React.FC = () => {
   const fetchBubbles = useBubbleStore((state) => state.fetchBubbles);
@@ -10,12 +14,13 @@ const App: React.FC = () => {
   const bubbles = useBubbleStore((state) => state.bubbles);
   const addBubble = useBubbleStore((state) => state.addBubble);
 
+  // バブル追加時のロジック
   const handleAddBubble = (text: string, color: string) => {
     const newBubble: Bubble = {
       id: uuidv4(),
-      text, // label を text に変更
+      text,
       color,
-      x: Math.random() * 100, // ランダムな初期位置（後でレイアウト調整可能）
+      x: Math.random() * 100,
       y: Math.random() * 100,
     };
     addBubble(newBubble);
@@ -26,21 +31,31 @@ const App: React.FC = () => {
   }, [fetchBubbles]);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">バブル可視化アプリ</h1>
-      <button
+    <div style={{ padding: '16px' }}>
+      <Title level={2} style={{ marginBottom: '16px' }}>
+        バブル可視化アプリ
+      </Title>
+
+      {/* バブル追加ボタン */}
+      <Button
+        type="primary"
+        style={{ marginBottom: '16px' }}
         onClick={() => setModalOpen(true)}
-        className="bg-green-500 text-white px-4 py-2 rounded mb-4"
       >
-        ＋ バブル追加
-      </button>
-      {modalOpen && (
-        <BubbleModal
-          onSubmit={handleAddBubble}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
-      <GraphComponent bubbles={bubbles} />
+        <FiPlus style={{ marginRight: '0.5rem' }} />
+        バブル追加
+      </Button>
+
+      {/* モーダル (Ant Design) */}
+      <BubbleModal
+        visible={modalOpen}              // antd v4: visible / antd v5: open
+        onSubmit={handleAddBubble}
+        onClose={() => setModalOpen(false)}
+      />
+
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <GraphComponent bubbles={bubbles} />
+      </div>
     </div>
   );
 };
