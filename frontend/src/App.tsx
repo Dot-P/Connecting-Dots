@@ -1,24 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GraphComponent from './components/Graph';
 import BubbleModal from './components/BubbleModal';
 import { v4 as uuidv4 } from 'uuid';
-import { useBubbleStore, Bubble } from './store';
+import { useBubbleStore, Bubble } from './store/BubbleStore';
 
 const App: React.FC = () => {
+  const fetchBubbles = useBubbleStore((state) => state.fetchBubbles);
   const [modalOpen, setModalOpen] = useState(false);
   const bubbles = useBubbleStore((state) => state.bubbles);
   const addBubble = useBubbleStore((state) => state.addBubble);
 
-  const handleAddBubble = (label: string, color: string) => {
+  const handleAddBubble = (text: string, color: string) => {
     const newBubble: Bubble = {
       id: uuidv4(),
-      label,
+      text, // label を text に変更
       color,
       x: Math.random() * 100, // ランダムな初期位置（後でレイアウト調整可能）
       y: Math.random() * 100,
     };
     addBubble(newBubble);
   };
+
+  useEffect(() => {
+    fetchBubbles();
+  }, [fetchBubbles]);
 
   return (
     <div className="p-4">

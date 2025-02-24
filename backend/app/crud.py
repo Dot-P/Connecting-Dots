@@ -1,4 +1,5 @@
 import uuid
+import random
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,7 +9,12 @@ from app.schemas import BubbleCreate, RelationCreate
 
 
 async def create_bubble(db: AsyncSession, bubble_data: BubbleCreate):
-    new_bubble = Bubble(**bubble_data.dict())
+    new_bubble =  Bubble(
+        text=bubble_data.text,
+        color=bubble_data.color,
+        x=random.uniform(0, 100),
+        y=random.uniform(0, 100),
+    )
     db.add(new_bubble)
     await db.commit()
     await db.refresh(new_bubble)
@@ -29,11 +35,17 @@ async def update_bubble(
 ):
     bubble = await get_bubble(db, bubble_id)
     if bubble:
-        for key, value in bubble_data.dict().items():
+        data = bubble_data.dict(exclude_unset=True)
+        if "x" not in data or data["x"] is None:
+            data["x"] = bubble.x
+        if "y" not in data or data["y"] is None:
+            data["y"] = bubble.y
+        for key, value in data.items():
             setattr(bubble, key, value)
         await db.commit()
         await db.refresh(bubble)
     return bubble
+
 
 
 async def delete_bubble(db: AsyncSession, bubble_id: uuid.UUID):

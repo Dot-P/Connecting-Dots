@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, String
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
@@ -13,6 +13,8 @@ class Bubble(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     text = Column(String, nullable=False)
     color = Column(String, default="#999999")
+    x = Column(Float, nullable=False, default=lambda: random.uniform(0, 100))
+    y = Column(Float, nullable=False, default=lambda: random.uniform(0, 100))
     created_at = Column(TIMESTAMP, server_default=func.now())
 
 

@@ -2,11 +2,14 @@ import uuid
 from datetime import datetime
 
 from pydantic import BaseModel
+from typing import Optional
 
 
 class BubbleBase(BaseModel):
     text: str
     color: str
+    x: Optional[float] = None
+    y: Optional[float] = None
 
 
 class BubbleCreate(BubbleBase):

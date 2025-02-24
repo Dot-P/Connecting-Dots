@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-// バブルの型定義
+// フロントエンドで扱うバブルの型定義（バックエンドとフィールド名を統一）
 export interface Bubble {
   id: string;
-  label: string;
+  text: string;
   color: string;
   x: number;
   y: number;
@@ -15,15 +15,14 @@ interface BubbleState {
   bubbles: Bubble[];
   loading: boolean;
   error: string | null;
-  // バックエンド API との連携
   fetchBubbles: () => Promise<void>;
-  addBubble: (bubble: Omit<Bubble, 'id'>) => Promise<void>;
+  addBubble: (bubble: Omit<Bubble, 'id' | 'x' | 'y'>) => Promise<void>;
   updateBubble: (bubble: Bubble) => Promise<void>;
   deleteBubble: (bubbleId: string) => Promise<void>;
 }
 
-// Axios のベースURL設定（環境に合わせて変更してください）
-axios.defaults.baseURL =  import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Vite の環境変数を利用してバックエンドの URL を設定
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const useBubbleStore = create<BubbleState>((set, get) => ({
   bubbles: [],
@@ -33,7 +32,7 @@ export const useBubbleStore = create<BubbleState>((set, get) => ({
   fetchBubbles: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get<Bubble[]>('/bubbles');
+      const response = await axios.get<Bubble[]>('/bubbles/');
       set({ bubbles: response.data });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unknown error' });
@@ -42,9 +41,12 @@ export const useBubbleStore = create<BubbleState>((set, get) => ({
     }
   },
   // バブルを追加（バックエンドに POST リクエスト）
-  addBubble: async (bubbleData: Omit<Bubble, 'id'>) => {
+  addBubble: async (bubbleData: Omit<Bubble, 'id' | 'x' | 'y'>) => {
     try {
-      const response = await axios.post<Bubble>('/bubbles', bubbleData);
+      // フロントエンドの 'text' と 'color' をそのまま送信
+      const payload = { text: bubbleData.text, color: bubbleData.color };
+      console.log(payload);
+      const response = await axios.post('/bubbles/', payload);
       set((state) => ({ bubbles: [...state.bubbles, response.data] }));
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unknown error' });
@@ -53,7 +55,8 @@ export const useBubbleStore = create<BubbleState>((set, get) => ({
   // バブルを更新（バックエンドに PUT リクエスト）
   updateBubble: async (bubble: Bubble) => {
     try {
-      const response = await axios.put<Bubble>(`/bubbles/${bubble.id}`, bubble);
+      const payload = { text: bubble.text, color: bubble.color, x: bubble.x, y: bubble.y };
+      const response = await axios.put(`/bubbles/${bubble.id}`, payload);
       set((state) => ({
         bubbles: state.bubbles.map((b) => (b.id === bubble.id ? response.data : b)),
       }));
